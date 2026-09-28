@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DAA Backtracking Solver</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+<!-- ── HEADER ───────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">⬡</span>
+      <span class="logo-text">BACKTRACK<span class="accent">LAB</span></span>
+    </div>
+    <p class="tagline">DAA Project · Backtracking · Pruning · Visualization</p>
+  </div>
+</header>
+
+<!-- ── TAB NAV ──────────────────────────────────────────────── -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="sudoku">⊞ Sudoku Solver</button>
+  <button class="tab-btn" data-tab="nqueens">♛ N-Queens Solver</button>
+  <button class="tab-btn" data-tab="theory">📖 Theory & Complexity</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  SUDOKU TAB                                               -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="tab-sudoku" class="tab-section active">
+  <div class="solver-layout">
+
+    <!-- Controls -->
+    <div class="panel control-panel">
+      <h2 class="panel-title">Controls</h2>
+
+      <div class="control-group">
+        <label class="ctrl-label">Preset Difficulty</label>
+        <div class="btn-group">
+          <button class="preset-btn active" data-difficulty="easy">Easy</button>
+          <button class="preset-btn" data-difficulty="medium">Medium</button>
+          <button class="preset-btn" data-difficulty="hard">Hard</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="ctrl-label">Heuristic</label>
+        <label class="toggle-label">
+          <input type="checkbox" id="mrv-toggle" />
+          <span class="toggle-track"></span>
+          <span class="toggle-text">Use MRV (Minimum Remaining Values)</span>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="ctrl-label">Playback Speed</label>
+        <input type="range" id="speed-slider" min="1" max="5" value="3" class="slider" />
+        <div class="speed-labels"><span>Slow</span><span>Fast</span></div>
+      </div>
+
+      <div class="action-btns">
+        <button id="sudoku-solve-btn" class="btn-primary">▶ Solve</button>
+        <button id="sudoku-step-btn" class="btn-secondary">⏭ Step</button>
+        <button id="sudoku-reset-btn" class="btn-ghost">↺ Reset</button>
+      </div>
+
+      <div class="playback-controls hidden" id="sudoku-playback">
+        <button id="sudoku-pause-btn" class="btn-icon">⏸</button>
+        <div class="step-counter">Step <span id="current-step">0</span> / <span id="total-steps">0</span></div>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="panel grid-panel">
+      <h2 class="panel-title">9×9 Grid</h2>
+      <div class="sudoku-wrapper">
+        <div id="sudoku-grid" class="sudoku-grid"></div>
+      </div>
+      <div class="legend">
+        <span class="leg-item"><span class="leg-dot given"></span>Given</span>
+        <span class="leg-item"><span class="leg-dot placed"></span>Placed</span>
+        <span class="leg-item"><span class="leg-dot backtrack"></span>Backtrack</span>
+        <span class="leg-item"><span class="leg-dot solved"></span>Solved</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="panel stats-panel">
+      <h2 class="panel-title">Performance Metrics</h2>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-val" id="s-calls">—</div>
+          <div class="metric-lbl">Recursive Calls</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="s-pruned">—</div>
+          <div class="metric-lbl">Pruned Branches</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="s-depth">—</div>
+          <div class="metric-lbl">Max Depth</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="s-time">—</div>
+          <div class="metric-lbl">Time (ms)</div>
+        </div>
+      </div>
+
+      <div class="tree-title">Search Steps Log</div>
+      <div id="sudoku-log" class="step-log"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  N-QUEENS TAB                                             -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="tab-nqueens" class="tab-section">
+  <div class="solver-layout">
+
+    <!-- Controls -->
+    <div class="panel control-panel">
+      <h2 class="panel-title">Controls</h2>
+
+      <div class="control-group">
+        <label class="ctrl-label">Board Size (N)</label>
+        <div class="n-selector">
+          <button id="n-dec" class="n-btn">−</button>
+          <span id="n-val" class="n-display">8</span>
+          <button id="n-inc" class="n-btn">+</button>
+        </div>
+        <p class="hint">Range: 4 – 12</p>
+      </div>
+
+      <div class="control-group">
+        <label class="ctrl-label">Playback Speed</label>
+        <input type="range" id="nq-speed-slider" min="1" max="5" value="3" class="slider" />
+        <div class="speed-labels"><span>Slow</span><span>Fast</span></div>
+      </div>
+
+      <div class="action-btns">
+        <button id="nq-solve-btn" class="btn-primary">▶ Solve</button>
+        <button id="nq-step-btn" class="btn-secondary">⏭ Step</button>
+        <button id="nq-reset-btn" class="btn-ghost">↺ Reset</button>
+      </div>
+
+      <div class="playback-controls hidden" id="nq-playback">
+        <button id="nq-pause-btn" class="btn-icon">⏸</button>
+        <div class="step-counter">Step <span id="nq-current-step">0</span> / <span id="nq-total-steps">0</span></div>
+      </div>
+
+      <div class="sol-nav hidden" id="sol-nav">
+        <div class="ctrl-label">Browse Solutions</div>
+        <div class="btn-group">
+          <button id="prev-sol" class="btn-secondary">← Prev</button>
+          <span id="sol-indicator">1 / 1</span>
+          <button id="next-sol" class="btn-secondary">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Board -->
+    <div class="panel grid-panel">
+      <h2 class="panel-title">N×N Chessboard</h2>
+      <div class="nq-wrapper">
+        <div id="nq-board" class="nq-board"></div>
+      </div>
+      <div class="legend">
+        <span class="leg-item"><span class="leg-dot placed"></span>Queen Placed</span>
+        <span class="leg-item"><span class="leg-dot backtrack"></span>Backtracking</span>
+        <span class="leg-item"><span class="leg-dot solved"></span>Solution Found</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="panel stats-panel">
+      <h2 class="panel-title">Performance Metrics</h2>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-val" id="nq-calls">—</div>
+          <div class="metric-lbl">Recursive Calls</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="nq-pruned">—</div>
+          <div class="metric-lbl">Pruned Branches</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="nq-solutions">—</div>
+          <div class="metric-lbl">Solutions Found</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="nq-time">—</div>
+          <div class="metric-lbl">Time (ms)</div>
+        </div>
+      </div>
+      <div class="tree-title">Steps Log</div>
+      <div id="nq-log" class="step-log"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  THEORY TAB                                               -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<section id="tab-theory" class="tab-section">
+  <div class="theory-layout">
+
+    <div class="theory-card">
+      <h2>What is Backtracking?</h2>
+      <p>Backtracking is a systematic algorithm that incrementally builds candidates to solutions, <strong>abandoning ("pruning") a candidate</strong> as soon as it's determined it cannot lead to a valid solution.</p>
+      <pre class="code-block">function solve():
+    if solution_found:
+        return True
+
+    for each choice:
+        if is_valid(choice):
+            make_choice()
+            if solve():
+                return True
+            undo_choice()   ← BACKTRACK
+
+    return False</pre>
+    </div>
+
+    <div class="theory-card">
+      <h2>Brute Force vs Backtracking</h2>
+      <table class="compare-table">
+        <tr><th>Property</th><th>Brute Force</th><th>Backtracking</th></tr>
+        <tr><td>Strategy</td><td>Try all combinations</td><td>Prune invalid paths early</td></tr>
+        <tr><td>Efficiency</td><td>Very slow</td><td>Much faster in practice</td></tr>
+        <tr><td>N-Queens (N=8)</td><td>8⁸ = 16M checks</td><td>~2000 calls</td></tr>
+        <tr><td>Pruning</td><td>None</td><td>Constraint checking</td></tr>
+      </table>
+    </div>
+
+    <div class="theory-card">
+      <h2>Time Complexity</h2>
+      <div class="complexity-grid">
+        <div class="cbox">
+          <div class="cbox-title">Sudoku</div>
+          <div class="cbox-val">O(9<sup>m</sup>)</div>
+          <div class="cbox-desc">m = empty cells. With MRV heuristic, often much better in practice.</div>
+        </div>
+        <div class="cbox">
+          <div class="cbox-title">N-Queens</div>
+          <div class="cbox-val">O(N!)</div>
+          <div class="cbox-desc">N rows × N choices each. Pruning reduces to ~O(N!/some_factor).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="theory-card">
+      <h2>Pruning in Action</h2>
+      <div class="prune-grid">
+        <div class="prune-box">
+          <div class="prune-title">Sudoku Constraints</div>
+          <ul>
+            <li>✗ Number already in same row</li>
+            <li>✗ Number already in same column</li>
+            <li>✗ Number already in 3×3 subgrid</li>
+            <li>✓ MRV: Fill most-constrained cell first</li>
+          </ul>
+        </div>
+        <div class="prune-box">
+          <div class="prune-title">N-Queens Constraints</div>
+          <ul>
+            <li>✗ Queen in same column</li>
+            <li>✗ Queen on upper-left diagonal</li>
+            <li>✗ Queen on upper-right diagonal</li>
+            <li>✓ Each row gets exactly one queen</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="theory-card">
+      <h2>N-Queens Solution Count</h2>
+      <table class="compare-table">
+        <tr><th>N</th><th>Solutions</th><th>Recursive Calls (approx)</th></tr>
+        <tr><td>4</td><td>2</td><td>~16</td></tr>
+        <tr><td>6</td><td>4</td><td>~53</td></tr>
+        <tr><td>8</td><td>92</td><td>~876</td></tr>
+        <tr><td>10</td><td>724</td><td>~8407</td></tr>
+        <tr><td>12</td><td>14200</td><td>~207,000</td></tr>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── TOAST ─────────────────────────────────────────────────── -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
